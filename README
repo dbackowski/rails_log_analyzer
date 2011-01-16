@@ -1,0 +1,10 @@
+Rails 2.3.x log analyzer (query_stats plugin required)
+
+Use: 
+./rails_log_analyzer.rb production.log
+
+Will print out top (max 20):
+- most slowest actions 
+- most DB queries count actions
+- most requested actions
+- error 500 actions
