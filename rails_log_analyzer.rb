@@ -1,7 +1,45 @@
 #!/usr/bin/env ruby
 
-REPORT_LIMIT = 20
+require 'optparse'                                                                                                                                                                                                                                                                                                                                                                                               
+
+options = {:limit => 20}
+
+optparse = OptionParser.new do |opts|
+  script_name = File.basename($0)
+  opts.banner = "Usage: ruby #{script_name} [options] number"
+
+  opts.separator ""
   
+  opts.on('-f', '--file FILE', 'Log file to analyze') do |f|
+    options[:file] = f
+  end
+
+  opts.on('-l', '--limit NUMBER', Integer, "Limit report max size (default #{options[:limit]})") do |l|
+    options[:limit] = l
+  end
+
+  opts.on('-h', '--help', 'Display this screen') do
+    puts opts
+    exit
+  end
+end
+
+begin
+  optparse.parse!
+  required = [:file]
+  missing = required.select{ |param| options[param].nil? }
+  
+  if not missing.empty?               
+    puts "Missing options: #{missing.join(', ')}"
+    puts optparse
+    exit
+  end
+rescue OptionParser::InvalidOption, OptionParser::MissingArgument
+  puts $!.to_s
+  puts optparse
+  exit
+end
+
 controller = nil
 action = nil
 method = nil
@@ -12,7 +50,7 @@ top_db_queries_actions = {}
 top_most_requested_actions = {}
 
 begin
-  lines = File.readlines(ARGV[0])
+  lines = File.readlines(options[:file])
 
   lines.each { |line|
     total_time = nil
@@ -20,32 +58,39 @@ begin
     db_time = nil
     status = nil
     queries = nil
-    
-    line.scan(/Processing ([a-z\:]+)#([a-z\_]+).+(GET|PUT|POST|DELETE)/i).each { |t|
-      controller = t[0]
-      action = t[1]
-      method = t[2]
-    }
 
-    line.scan(/Completed in ([0-9]+)ms \((View: ([0-9]+), DB: ([0-9]+)|DB: ([0-9]+)) ([0-9]+) queries\) \| ([0-9]+)/i).each { |t|
-      total_time = t[0].to_i
-      
-      unless t[2].nil?
-        view_time = t[2]
-        db_time = t[3].to_i
-        queries = t[5].to_i
-        status = t[6].to_i
+    if line =~ /Processing ([a-z\:]+)#([a-z\_]+).+(GET|PUT|POST|DELETE)/i
+      controller = $1
+      action = $2
+      method = $3
+    elsif line =~ /Completed in ([0-9]+)ms \((View: ([0-9]+), DB: ([0-9]+)|DB: ([0-9]+)) ([0-9]+) queries\) \| ([0-9]+)/i
+      total_time = $1.to_i
+
+      unless $3.nil?
+        view_time = $3
+        db_time = $4.to_i
+        queries = $6.to_i
+        status = $7.to_i
       else
-        db_time = t[4].to_i
-        queries = t[5].to_i
-        status = t[6].to_i
+        db_time = $5.to_i
+        queries = $6.to_i
+        status = $7.to_i
       end
-    }
-
-    if status.nil?
-      if line =~ /500 Error/i
-        status = 500
+    elsif line =~ /Completed in ([0-9]+)ms \((View: ([0-9]+), DB: ([0-9]+)|DB: ([0-9]+)) ([0-9]+) queries\) \| ([0-9]+)/i
+      total_time = $1.to_i
+      
+      unless $3.nil?
+        view_time = $3
+        db_time = $4.to_i
+        queries = $6.to_i
+        status = $7.to_i
+      else
+        db_time = $5.to_i
+        queries = $6.to_i
+        status = $7.to_i
       end
+    elsif line =~ /500 Error/i
+      status = 500
     end
 
     if !total_time.nil? && status < 400
@@ -73,19 +118,19 @@ begin
         top_most_requested_actions["#{controller}##{action}"] += 1
       end
 
-      if top_slowest_actions.keys.size > REPORT_LIMIT
-        min = top_slowest_actions.map{|a,x| x["total_time"]}[0 .. REPORT_LIMIT].sort{|a,b| b <=> a}.min
-        top_slowest_actions.delete_if{|key, value| value["total_time"] <= min && top_slowest_actions.keys.size > REPORT_LIMIT}
+      if top_slowest_actions.keys.size > options[:limit]
+        min = top_slowest_actions.map{|a,x| x["total_time"]}[0 .. options[:limit]].sort{|a,b| b <=> a}.min
+        top_slowest_actions.delete_if{|key, value| value["total_time"] <= min && top_slowest_actions.keys.size > options[:limit]}
       end
 
-      if top_db_queries_actions.size > REPORT_LIMIT
-        min = top_db_queries_actions.map{|a,x| x["queries"]}[0 .. REPORT_LIMIT].sort{|a,b| b <=> a}.min
-        top_db_queries_actions.delete_if{|key, value| value["queries"] <= min && top_db_queries_actions.keys.size > REPORT_LIMIT}
+      if top_db_queries_actions.size > options[:limit]
+        min = top_db_queries_actions.map{|a,x| x["queries"]}[0 .. options[:limit]].sort{|a,b| b <=> a}.min
+        top_db_queries_actions.delete_if{|key, value| value["queries"] <= min && top_db_queries_actions.keys.size > options[:limit]}
       end
 
-      if top_most_requested_actions.size > REPORT_LIMIT
-        min = top_most_requested_actions.map{|a,x| x}[0 .. REPORT_LIMIT].sort{|a,b| b <=> a}.min
-        top_most_requested_actions.delete_if{|key, value| value <= min && top_most_requested_actions.keys.size > REPORT_LIMIT}
+      if top_most_requested_actions.size > options[:limit]
+        min = top_most_requested_actions.map{|a,x| x}[0 .. options[:limit]].sort{|a,b| b <=> a}.min
+        top_most_requested_actions.delete_if{|key, value| value <= min && top_most_requested_actions.keys.size > options[:limit]}
       end
     end
 
@@ -96,9 +141,9 @@ begin
         top_error_500_actions["#{controller}##{action}"] += 1
       end
 
-      if top_error_500_actions.size > REPORT_LIMIT
-        min = top_error_500_actions.map{|a,x| x}[0 .. REPORT_LIMIT].sort{|a,b| b <=> a}.min
-        top_error_500_actions.delete_if{|key, value| value <= min && top_error_500_actions.keys.size > REPORT_LIMIT}
+      if top_error_500_actions.size > options[:limit]
+        min = top_error_500_actions.map{|a,x| x}[0 .. options[:limit]].sort{|a,b| b <=> a}.min
+        top_error_500_actions.delete_if{|key, value| value <= min && top_error_500_actions.keys.size > options[:limit]}
       end
     end
   }
