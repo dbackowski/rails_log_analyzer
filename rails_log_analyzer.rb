@@ -15,7 +15,7 @@ optparse = OptionParser.new do |opts|
   end
 
   opts.on('-l', '--limit NUMBER', Integer, "Limit report max size (default #{options[:limit]})") do |l|
-    options[:limit] = l
+    options[:limit] = l 
   end
 
   opts.on('-h', '--help', 'Display this screen') do
@@ -119,18 +119,27 @@ begin
       end
 
       if top_slowest_actions.keys.size > options[:limit]
-        min = top_slowest_actions.map{|a,x| x["total_time"]}[0 .. options[:limit]].sort{|a,b| b <=> a}.min
-        top_slowest_actions.delete_if{|key, value| value["total_time"] <= min && top_slowest_actions.keys.size > options[:limit]}
+        tmp = {}
+
+        for a in top_slowest_actions.map{|a,x| [a, x["total_time"]]}.sort{|a,b| b[1] <=> a[1]}[0 .. options[:limit]]
+          if tmp.size < options[:limit]
+            tmp[a[0]] = {"total_time" => a[1]}
+          end
+        end
+
+        top_slowest_actions = tmp
       end
 
       if top_db_queries_actions.size > options[:limit]
-        min = top_db_queries_actions.map{|a,x| x["queries"]}[0 .. options[:limit]].sort{|a,b| b <=> a}.min
-        top_db_queries_actions.delete_if{|key, value| value["queries"] <= min && top_db_queries_actions.keys.size > options[:limit]}
-      end
+        tmp = {}
 
-      if top_most_requested_actions.size > options[:limit]
-        min = top_most_requested_actions.map{|a,x| x}[0 .. options[:limit]].sort{|a,b| b <=> a}.min
-        top_most_requested_actions.delete_if{|key, value| value <= min && top_most_requested_actions.keys.size > options[:limit]}
+        for a in top_db_queries_actions.map{|a,x| [a, x["queries"]]}.sort{|a,b| b[1] <=> a[1]}[0 .. options[:limit]]
+          if tmp.size < options[:limit]
+            tmp[a[0]] = {"queries" => a[1]}
+          end
+        end
+
+        top_db_queries_actions = tmp
       end
     end
 
@@ -139,11 +148,6 @@ begin
         top_error_500_actions["#{controller}##{action}"] = 1
       else
         top_error_500_actions["#{controller}##{action}"] += 1
-      end
-
-      if top_error_500_actions.size > options[:limit]
-        min = top_error_500_actions.map{|a,x| x}[0 .. options[:limit]].sort{|a,b| b <=> a}.min
-        top_error_500_actions.delete_if{|key, value| value <= min && top_error_500_actions.keys.size > options[:limit]}
       end
     end
   }
@@ -159,12 +163,12 @@ begin
   end
 
   puts "\nTop most requested actions:"
-  for d in top_most_requested_actions.map{|a,x| [a, x]}.sort{|a,b| b[1] <=> a[1]}
+  for d in top_most_requested_actions.map{|a,x| [a, x]}.sort{|a,b| b[1] <=> a[1]}[0 .. options[:limit] - 1]
     puts "#{d[0]} #{d[1]}"
   end
 
   puts "\nTop error 500 actions:"
-  for d in top_error_500_actions.map{|a,x| [a, x]}.sort{|a,b| b[1] <=> a[1]}
+  for d in top_error_500_actions.map{|a,x| [a, x]}.sort{|a,b| b[1] <=> a[1]}[0 .. options[:limit] - 1]
     puts "#{d[0]} #{d[1]}"
   end
 rescue Exception => e

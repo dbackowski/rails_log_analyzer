@@ -1,10 +1,39 @@
 Rails 2.3.x log analyzer (query_stats plugin required)
 
-Use: 
-./rails_log_analyzer.rb production.log
+Usage: ruby rails_log_analyzer.rb [options] number
 
-Will print out top (max 20):
-- most slowest actions 
-- most DB queries count actions
-- most requested actions
-- error 500 actions
+    -f, --file FILE                  Log file to analyze
+    -l, --limit NUMBER               Limit report max size (default 20)
+    -h, --help                       Display this screen
+
+Example: 
+
+./rails_log_analyzer.rb -f production.log -l 5
+
+Output: 
+
+Top slowest actions:
+Clients::Payments::CurrentController#show 36s
+Clients::Net::AccessDevicesController#free_addresses 13s
+Clients::Payments::SchedulerController#index 11s
+Tasks::Puu::AccessDevicesController#free_addresses 10s
+Clients::Doc::ContractVoipController#auto_complete_for_contract_voip_wire_phone_no 9s
+
+Top most DB queries actions:
+Clients::Payments::SchedulerController#index 1000
+Clients::Payments::CurrentController#show 1000
+Scheduler::CalendarController#index 253
+Clients::InformationsController#show 204
+Clients::Net::AccessDevicesController#index 47
+
+Top most requested actions:
+Search::ClientsController#index 3246
+Clients::InformationsController#show 2637
+Soz::Current::ExternalController#index 2242
+Search::BaseController#get_search_type 1920
+BaseController#index 1648
+
+Top error 500 actions:
+Tasks::Puu::OthersController#show 3
+Tasks::Puu::MyController#show 2
+Clients::Payments::SchedulerController#show 1
