@@ -13,27 +13,43 @@ Example:
 Output: 
 
 Top slowest actions:
-Clients::Payments::CurrentController#show 36s
-Clients::Net::AccessDevicesController#free_addresses 13s
-Clients::Payments::SchedulerController#index 11s
-Tasks::Puu::AccessDevicesController#free_addresses 10s
-Clients::Doc::ContractVoipController#auto_complete_for_contract_voip_wire_phone_no 9s
+_________________________________________________________________________________________________________________
+| Controller                             | Action                                        | Total time [seconds] |
+|----------------------------------------+-----------------------------------------------+----------------------|
+| Clients::Payments::CurrentController   | show                                          | 36                   |
+| Clients::Net::AccessDevicesController  | free_addresses                                | 13                   |
+| Clients::Payments::SchedulerController | index                                         | 11                   |
+| Tasks::Puu::AccessDevicesController    | free_addresses                                | 10                   |
+| Clients::Doc::ContractVoipController   | auto_complete_for_contract_voip_wire_phone_no | 9                    |
+-----------------------------------------------------------------------------------------------------------------
 
 Top most DB queries actions:
-Clients::Payments::SchedulerController#index 1000
-Clients::Payments::CurrentController#show 1000
-Scheduler::CalendarController#index 253
-Clients::InformationsController#show 204
-Clients::Net::AccessDevicesController#index 47
+___________________________________________________________________
+| Controller                             | Action | Queries count |
+|----------------------------------------+--------+---------------|
+| Clients::Payments::CurrentController   | show   | 1000          |
+| Clients::Payments::SchedulerController | index  | 1000          |
+| Scheduler::CalendarController          | index  | 253           |
+| Clients::InformationsController        | show   | 204           |
+| Clients::Net::AccessDevicesController  | index  | 47            |
+-------------------------------------------------------------------
 
 Top most requested actions:
-Search::ClientsController#index 3246
-Clients::InformationsController#show 2637
-Soz::Current::ExternalController#index 2242
-Search::BaseController#get_search_type 1920
-BaseController#index 1648
+_____________________________________________________________________________
+| Controller                            | Action          | Requested count |
+|---------------------------------------+-----------------+-----------------|
+| Search::ClientsController             | index           | 3246            |
+| Clients::InformationsController       | show            | 2637            |
+| Soz::Current::ExternalController      | index           | 2242            |
+| Search::BaseController                | get_search_type | 1920            |
+| BaseController                        | index           | 1648            |
+-----------------------------------------------------------------------------
 
 Top error 500 actions:
-Tasks::Puu::OthersController#show 3
-Tasks::Puu::MyController#show 2
-Clients::Payments::SchedulerController#show 1
+__________________________________________________________________
+| Controller                             | Action | Errors count |
+|----------------------------------------+--------+--------------|
+| Tasks::Puu::OthersController           | show   | 3            |
+| Tasks::Puu::MyController               | show   | 2            |
+| Clients::Payments::SchedulerController | show   | 1            |
+------------------------------------------------------------------

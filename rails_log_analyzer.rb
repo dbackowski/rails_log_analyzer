@@ -40,6 +40,45 @@ rescue OptionParser::InvalidOption, OptionParser::MissingArgument
   exit
 end
 
+def table_output(labels=[], data=[])
+  first_column_length = data.sort{ |a,b| b[0].length <=> a[0].length }[0][0].length
+  second_column_length = data.sort{ |a,b| b[1].length <=> a[1].length }[0][1].length
+  third_column_length = data.sort{ |a,b| b[2].to_s.length <=> a[2].to_s.length }[0][2].to_s.length
+  
+  if first_column_length < labels[0].length
+    first_column_length = labels[0].length
+  end
+  
+  if second_column_length < labels[1].length
+    second_column_length = labels[1].length
+  end
+  
+  if third_column_length < labels[2].length
+    third_column_length = labels[2].length
+  end
+  
+  tmp = ''
+  (first_column_length + second_column_length + third_column_length + 10).times { tmp << '_' }
+  puts tmp
+  puts "| %-#{first_column_length}s | %-#{second_column_length}s | %-#{third_column_length}s |" % [labels[0], labels[1], labels[2]]
+  
+  tmp = ''
+  (first_column_length + second_column_length + third_column_length + 10).times { tmp << '-' }
+  tmp[0] = '|'
+  tmp[first_column_length+3] = '+'
+  tmp[first_column_length+3 + second_column_length+3] = '+'
+  tmp[tmp.length - 1] = '|'
+  puts tmp
+  
+  for line in data
+    puts "| %-#{first_column_length}s | %-#{second_column_length}s | %-#{third_column_length}s |" % [line[0], line[1], line[2]]
+  end
+  
+  tmp = ''
+  (first_column_length + second_column_length + third_column_length + 10).times { tmp << '-' }
+  puts tmp
+end
+
 controller = nil
 action = nil
 method = nil
@@ -151,26 +190,18 @@ begin
       end
     end
   }
-
+  
   puts "Top slowest actions:"
-  for d in top_slowest_actions.map{|a,x| [a, x["total_time"]]}.sort{|a,b| b[1] <=> a[1]}
-    puts "#{d[0]} #{d[1]/1000}s"
-  end
+  table_output(['Controller', 'Action', 'Total time [seconds]'], top_slowest_actions.map{|a,x| [a.split('#')[0], a.split('#')[1], x["total_time"]/1000]}.sort{|a,b| b[2] <=> a[2]})
 
   puts "\nTop most DB queries actions:"
-  for d in top_db_queries_actions.map{|a,x| [a, x["queries"]]}.sort{|a,b| b[1] <=> a[1]}
-    puts "#{d[0]} #{d[1]}"
-  end
+  table_output(['Controller', 'Action', 'Queries count'], top_db_queries_actions.map{|a,x| [a.split('#')[0], a.split('#')[1], x["queries"]]}.sort{|a,b| b[2] <=> a[2]})
 
   puts "\nTop most requested actions:"
-  for d in top_most_requested_actions.map{|a,x| [a, x]}.sort{|a,b| b[1] <=> a[1]}[0 .. options[:limit] - 1]
-    puts "#{d[0]} #{d[1]}"
-  end
+  table_output(['Controller', 'Action', 'Requested count'], top_most_requested_actions.map{|a,x| [a.split('#')[0], a.split('#')[1], x]}.sort{|a,b| b[2] <=> a[2]}[0 .. options[:limit] - 1])
 
   puts "\nTop error 500 actions:"
-  for d in top_error_500_actions.map{|a,x| [a, x]}.sort{|a,b| b[1] <=> a[1]}[0 .. options[:limit] - 1]
-    puts "#{d[0]} #{d[1]}"
-  end
+  table_output(['Controller', 'Action', 'Errors count'], top_error_500_actions.map{|a,x| [a.split('#')[0], a.split('#')[1], x]}.sort{|a,b| b[2] <=> a[2]}[0 .. options[:limit] - 1])
 rescue Exception => e
   puts e
   exit(1)
