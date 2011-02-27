@@ -1,4 +1,4 @@
-Rails 2.3.x log analyzer (query_stats plugin required)
+Rails 2.3.x log analyzer (query_stats plugin optional)
 
 Usage: ruby rails_log_analyzer.rb [options] number
 
@@ -10,40 +10,73 @@ Example:
 
 ./rails_log_analyzer.rb -f production.log -l 5
 
-Output: 
+Output with query_stats plugin: 
 
 Top slowest actions:
 _________________________________________________________________________________________________________________
 | Controller                             | Action                                        | Total time [seconds] |
 |----------------------------------------+-----------------------------------------------+----------------------|
-| Clients::Payments::CurrentController   | show                                          | 36                   |
-| Clients::Net::AccessDevicesController  | free_addresses                                | 13                   |
-| Clients::Payments::SchedulerController | index                                         | 11                   |
-| Tasks::Puu::AccessDevicesController    | free_addresses                                | 10                   |
-| Clients::Doc::ContractVoipController   | auto_complete_for_contract_voip_wire_phone_no | 9                    |
+| Clients::Payments::CurrentController   | show                                          | 36.457               |
+| Clients::Net::AccessDevicesController  | free_addresses                                | 13.745               |
+| Clients::Payments::SchedulerController | index                                         | 11.263               |
+| Tasks::Puu::AccessDevicesController    | free_addresses                                | 10.524               |
+| Clients::Doc::ContractVoipController   | auto_complete_for_contract_voip_wire_phone_no | 9.648                |
 -----------------------------------------------------------------------------------------------------------------
 
 Top most DB queries actions:
 ___________________________________________________________________
 | Controller                             | Action | Queries count |
 |----------------------------------------+--------+---------------|
-| Clients::Payments::CurrentController   | show   | 1000          |
 | Clients::Payments::SchedulerController | index  | 1000          |
+| Clients::Payments::CurrentController   | show   | 1000          |
 | Scheduler::CalendarController          | index  | 253           |
 | Clients::InformationsController        | show   | 204           |
 | Clients::Net::AccessDevicesController  | index  | 47            |
 -------------------------------------------------------------------
 
 Top most requested actions:
-_____________________________________________________________________________
-| Controller                            | Action          | Requested count |
-|---------------------------------------+-----------------+-----------------|
-| Search::ClientsController             | index           | 3246            |
-| Clients::InformationsController       | show            | 2637            |
-| Soz::Current::ExternalController      | index           | 2242            |
-| Search::BaseController                | get_search_type | 1920            |
-| BaseController                        | index           | 1648            |
------------------------------------------------------------------------------
+________________________________________________________________________
+| Controller                       | Action          | Requested count |
+|----------------------------------+-----------------+-----------------|
+| Search::ClientsController        | index           | 3246            |
+| Clients::InformationsController  | show            | 2637            |
+| Soz::Current::ExternalController | index           | 2242            |
+| Search::BaseController           | get_search_type | 1920            |
+| BaseController                   | index           | 1648            |
+------------------------------------------------------------------------
+
+Top error 500 actions:
+__________________________________________________________________
+| Controller                             | Action | Errors count |
+|----------------------------------------+--------+--------------|
+| Tasks::Puu::OthersController           | show   | 3            |
+| Tasks::Puu::MyController               | show   | 2            |
+| Clients::Payments::SchedulerController | show   | 1            |
+------------------------------------------------------------------
+
+Output without query_stats plugin:
+
+Top slowest actions:
+_________________________________________________________________________________________________________________
+| Controller                             | Action                                        | Total time [seconds] |
+|----------------------------------------+-----------------------------------------------+----------------------|
+| Clients::Payments::CurrentController   | show                                          | 36.457               |
+| Clients::Net::AccessDevicesController  | free_addresses                                | 13.745               |
+| Clients::Payments::SchedulerController | index                                         | 11.263               |
+| Tasks::Puu::AccessDevicesController    | free_addresses                                | 10.524               |
+| Clients::Doc::ContractVoipController   | auto_complete_for_contract_voip_wire_phone_no | 9.648                |
+-----------------------------------------------------------------------------------------------------------------
+
+Top most requested actions:
+________________________________________________________________________
+| Controller                       | Action          | Requested count |
+|----------------------------------+-----------------+-----------------|
+| Search::ClientsController        | index           | 3246            |
+| Clients::InformationsController  | show            | 2637            |
+| Soz::Current::ExternalController | index           | 2242            |
+| Search::BaseController           | get_search_type | 1920            |
+| BaseController                   | index           | 1648            |
+------------------------------------------------------------------------
 
 Top error 500 actions:
 __________________________________________________________________
