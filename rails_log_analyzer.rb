@@ -6,7 +6,7 @@ options = {:limit => 20}
 
 optparse = OptionParser.new do |opts|
   script_name = File.basename($0)
-  opts.banner = "Usage: ruby #{script_name} [options] number"
+  opts.banner = "Usage: #{script_name} [options]"
 
   opts.separator ""
   
