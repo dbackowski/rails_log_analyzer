@@ -1,6 +1,6 @@
 Rails 2.3.x log analyzer (query_stats plugin optional)
 
-Usage: ruby rails_log_analyzer.rb [options] number
+Usage: rails_log_analyzer.rb [options]
 
     -f, --file FILE                  Log file to analyze
     -l, --limit NUMBER               Limit report max size (default 20)
